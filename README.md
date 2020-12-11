@@ -8,6 +8,7 @@
 
 - [What is SQErzo](#what-is-sqerzo)
 - [Which databases are supported](#which-databases-are-supported)
+- [Why use SQErzo?](#why-use-sqerzo)
 - [Project status](#project-status)
 - [Install](#install)
 - [Usage examples](#usage-examples)
@@ -35,6 +36,17 @@ Currently, I did the test with these databases:
 - RedisGraph
 - AWS Neptune (coming soon)
 - Gremlin (coming soon)
+
+## Why use SQErzo?
+
+`SQErzo` intermediates between the Graph DB and your code and can manage database differences between them. For examples:
+
+- RedisGraph doesn't support Date times or CONSTRAINTS, `SQErzo` does the magic to hide that.
+- Neo4j need different channels for writing than for read. `SQErzo` does the magic to hide that.
+- `SQErzo` integrates a in memory cache to avoid queries to Graph DB and try to improve the performance.
+- Every database uses their own Node/Edge identification system. You need to manage and understand then to realize when a node already exits in Graph DB. `SQErzo` do this for you. It doesn't matter the Graph DB engine you use.
+- `SQErzo` was made to avoid you to write useless code. You can create and manage Nodes and Edges in a few lines of code without know Graph DB internals.
+- `SQErzo` supports Graph DB bases on Open cypher language (a Graph databases query language). You don't need to learn them to perform day a day operations. 
 
 ## Project status
 
