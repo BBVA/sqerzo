@@ -8,6 +8,7 @@
 
 - [What is SQErzo](#what-is-sqerzo)
 - [Which databases are supported](#which-databases-are-supported)
+- [Project status](#project-status)
 - [Install](#install)
 - [Usage examples](#usage-examples)
   - [Run databases uses Docker.](#run-databases-uses-docker)
@@ -34,6 +35,10 @@ Currently, I did the test with these databases:
 - RedisGraph
 - AWS Neptune (coming soon)
 - Gremlin (coming soon)
+
+## Project status
+
+Project is in a very early stage. If you want to use them, have in count that. 
 
 ## Install
 
