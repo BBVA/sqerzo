@@ -86,7 +86,7 @@ This is the result database in RedisGrap:
 
 ### Load mail to a Graph
 
-If you need a more complex example, you can find in it [examples/email_graph.py](https://raw.githubusercontent.com/cr0hn/sqerzo/master/images/examples/user_meet_redisgraph.png).
+If you need a more complex example, you can find in it [examples/email_graph.py](https://github.com/cr0hn/sqerzo/blob/master/examples/email_graph.py).
 
 At this example we load a random generated mail inbox (generation script is also available) into a Graph Database following this [Neo4j Blog Post](https://neo4j.com/blog/data-modeling-pitfalls/) suggestions.
 
@@ -94,13 +94,13 @@ At this example we load a random generated mail inbox (generation script is also
 
 ## TODO
 
-[ ] Finish the implementation for Gremlin based Graph databases
-[ ] Improve speed at insertion
-[ ] Add support for dates to RedisGraph using transformation of dates to numbers
-[ ] Add support for `UNIQUE` constraints
-[ ] Add support for `INDEXES` constraints
-[ ] Add support for raw Cypher query
-[ ] Errors, issues, new features and something else
+- [ ] Finish the implementation for Gremlin based Graph databases
+- [ ] Improve speed at insertion
+- [ ] Add support for dates to RedisGraph using transformation of dates to numbers
+- [ ] Add support for `UNIQUE` constraints
+- [ ] Add support for `INDEXES` constraints
+- [ ] Add support for raw Cypher query
+- [ ] Errors, issues, new features and something else
 
 ## License
 
