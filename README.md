@@ -7,7 +7,15 @@
 
 
 - [What is SQErzo](#what-is-sqerzo)
-- [Which database are supported](#which-database-are-supported)
+- [Which databases are supported](#which-databases-are-supported)
+- [Install](#install)
+- [Usage examples](#usage-examples)
+  - [Run databases uses Docker.](#run-databases-uses-docker)
+    - [Start Neo4j](#start-neo4j)
+    - [Start RedisGraph](#start-redisgraph)
+  - [Simple usage](#simple-usage)
+  - [Load mail to a Graph](#load-mail-to-a-graph)
+- [TODO](#todo)
 - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -27,7 +35,29 @@ Currently, I did the test with these databases:
 - AWS Neptune (coming soon)
 - Gremlin (coming soon)
 
+## Install
+
+Install is easy. Only run:
+
+```shell
+> pip install sqerzo
+```
+
 ## Usage examples
+
+### Run databases uses Docker.
+
+#### Start Neo4j
+
+```shell
+> docker run -d -p7474:7474 -p7687:7687 -e NEO4J_AUTH=neo4j/s3cr3t neo4j
+```
+
+#### Start RedisGraph
+
+```shell
+> docker run -p 7000:6379 -d --rm redislabs/redisgraph
+```
 
 ### Simple usage
 
