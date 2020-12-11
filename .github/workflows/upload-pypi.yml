@@ -1,9 +1,9 @@
 name: Build Pypi Artifacts
 
 on:
-  push:
-    branches:
-      - master
+  create:
+    tags:
+      - v*
 
 jobs:
   deploy:

@@ -19,23 +19,8 @@ from .shared import ResultElement
 
 
 def gremlin_match_parser(res) -> Iterable[ResultElement or str]:
-    tmp_res = res.result_set
-
-    if type(tmp_res) is list:
-        results = tmp_res
-    else:
-        results = [tmp_res]
-
-    for t in results:
-        for r in t:
-            if hasattr(r, "__dict__"):
-                yield ResultElement(
-                    id=r.__dict__["id"],
-                    labels=[r.__dict__["label"]],
-                    properties=r.__dict__["properties"]
-                )
-            else:
-                yield r
+    ## TODO
+    raise NotImplementedError()
 
 
 def gremlin_graph_connection(connection_string: str):
