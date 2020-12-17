@@ -16,8 +16,13 @@
     - [Start Neo4j](#start-neo4j)
     - [Start RedisGraph](#start-redisgraph)
   - [Simple usage](#simple-usage)
-  - [Load mail to a Graph](#load-mail-to-a-graph)
+  - [Transactions](#transactions)
+- [Examples](#examples)
+  - [Load mails to a Graph](#load-mails-to-a-graph)
+- [ChangeLog](#changelog)
+  - [Release 0.1.0](#release-010)
 - [TODO](#todo)
+- [References](#references)
 - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
