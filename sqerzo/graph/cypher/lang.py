@@ -4,7 +4,7 @@
 # -------------------------------------------------------------------------
 from typing import List
 
-from ..config import SQErzoConfig
+from ...config import SQErzoConfig
 
 def scape_string(text: str):
     return text.replace("""\\""", """\\\\""").replace("'", """\\'""")
@@ -20,7 +20,7 @@ def prepare_params(values: dict, operation="insert", node_name="a") -> List[str]
         nn = ""
     else:
         nn = f"{node_name}."
-        op = "="
+        op = ":"
 
     ret = []
     ret_append = ret.append
@@ -47,3 +47,29 @@ def prepare_params(values: dict, operation="insert", node_name="a") -> List[str]
 
     return ret
 
+
+
+def create_query(node, partial: bool = False):
+
+    if not node.identity:
+        node.identity = node.make_identity()
+
+        # Do not include in dirty properties
+        del node.__dirty_properties__["identity"]
+
+    labels = node.labels()
+
+    tmp_prop = [f"identity: '{node.identity}'"]
+    tmp_prop.extend(prepare_params(node.properties))
+    tmp_prop.extend(prepare_params({
+        k: v
+        for k, v in node.__dict__.items()
+        if
+        k not in ("properties", "identity") and not k.startswith("_")
+    }))
+
+    prop = f"{{{', '.join(tmp_prop)}}}"
+
+    return f"{'' if partial else 'CREATE '} (:{labels} {prop})"
+
+__all__ = ("create_query", )

@@ -1,3 +1,6 @@
+import uuid
+import random
+
 from collections import Iterable
 
 
@@ -10,5 +13,8 @@ def get_class_properties(c) -> Iterable:
     return props
 
 
+guuid = lambda: uuid.uuid4().hex
+rtext = lambda: "".join(random.choice(string.ascii_letters) for _ in range(80))
 
-__all__ = ("get_class_properties",)
+
+__all__ = ("get_class_properties", "guuid", "rtext")

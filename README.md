@@ -30,12 +30,13 @@ It's compatible with these databases that supports Open Cypher language.
 
 ## Which databases are supported
 
-Currently, I did the test with these databases:
-
-- Neo4j
-- RedisGraph
-- AWS Neptune (coming soon)
-- Gremlin (coming soon)
+| Database | Status |
+| --- | --- |
+| Neo4j | Supported |
+| Redis Graph | Supported |
+| Arango DB | Looking for contributor |
+| AWS Neptune| Looking for contributor |
+| Gremlin | Looking for contributor |
 
 ## Why use SQErzo?
 
@@ -88,7 +89,7 @@ Without the need to change any code:
 ```python
 from dataclasses import dataclass
 
-from sqerzo import GraphEdge, GraphNode, SQErzoGraph as gh
+from sqerzo import GraphEdge, GraphNode, SQErzoGraph
 
 class MeetEdge(GraphEdge):
     pass
@@ -99,28 +100,25 @@ class UserNode(GraphNode):
 
     
 def create_graph(connection_string: str):
-    gh.setup(connection_string)
+    gh = SQErzoGraph(connection_string)
     gh.truncate()  # Drop database
     
-    # Creates 20 relations
-    for n in range(20):
-        u1 = UserNode(name=f"UName-{n}")
-        gh.get_or_create(u1)
+    u1 = UserNode(name=f"UName-1")
+    gh.save(u1)
+    
+    d1 = UserNode(name=f"DName-2")
+    gh.save(d1)
         
-        d1 = UserNode(name=f"DName-{n}")
-        gh.get_or_create(d1)
-        
-        u1_meet_g1 = MeetEdge(
-            source=u1,
-            destination=d1
-        )
-        gh.get_or_create(u1_meet_g1)
+    u1_meet_g1 = MeetEdge(
+        source=u1,
+        destination=d1
+    )
+    gh.save(u1_meet_g1)
         
 
 if __name__ == '__main__':
     create_graph("redis://127.0.0.1:7000/?graph=email")   
-    create_graph("neo4j://neo4j:s3cr3t@127.0.0.1:7687/?graph=email")   
-
+    create_graph("neo4j://neo4j:s3cr3t@127.0.0.1:7687/?graph=email")
 ```
 
 This is the result database in Node4j:
@@ -131,7 +129,54 @@ This is the result database in RedisGrap:
 
 ![user_meet_redisgraph logo](https://raw.githubusercontent.com/cr0hn/sqerzo/master/images/examples/user_meet_redisgraph.png)
 
-### Load mail to a Graph
+### Transactions
+
+Transactions are useful if you need add a lot of data. You add nodes and edges to a transaction. When they finish then perform the insertions to the database in a very efficient way:
+
+```python
+from dataclasses import dataclass
+
+from sqerzo import GraphEdge, GraphNode, SQErzoGraph
+
+class MeetEdge(GraphEdge):
+    pass
+
+@dataclass
+class UserNode(GraphNode):
+    __keys__ = ["name"]
+
+    name: str = None
+
+def create_graph(connection_string: str):
+    gh = SQErzoGraph(connection_string)
+    gh.truncate()  # Drop database
+
+    with gh.transaction() as tx:  # Transaction starts here
+
+        for n in range(500):  # Inserts 1000 nodes (500 * 2) and 500 relations
+            u1 = UserNode(name=f"UName-{n}")
+            d1 = UserNode(name=f"DName-{n}")
+
+            tx.add(u1)
+            tx.add(d1)
+
+            u1_meet_g1 = MeetEdge(
+                source=u1,
+                destination=d1
+            )
+            tx.add(u1_meet_g1)
+
+
+if __name__ == '__main__':
+    print("Redis...")
+    create_graph("redis://127.0.0.1:7000/?graph=email")
+    print("Neo4j...")
+    create_graph("neo4j://neo4j:s3cr3t@127.0.0.1:7687/?graph=email")
+```
+
+## Examples
+
+### Load mails to a Graph
 
 If you need a more complex example, you can find in it [examples/email_graph.py](https://github.com/cr0hn/sqerzo/blob/master/examples/email_graph.py).
 
@@ -139,15 +184,37 @@ At this example we load a random generated mail inbox (generation script is also
 
 ![Fraud graph db](https://dist.neo4j.com/wp-content/uploads/20180730162521/corrected-fraud-detection-email-data-model-1024x994.png)
 
+## ChangeLog
+
+### Release 0.1.0
+
+- [X] Improved speed at insertion by 100x
+- [X] Add support for `UNIQUE` create_constraints_nodes
+- [X] Add support for `INDEXES` create_constraints_nodes
+- [X] Add support for raw Cypher query
+- [x] Errors, issues, new features and something else
+- [x] Complete refactor to easy add new backends
+- [x] Complete refactor to easy add new backends
+- [x] Add new methods: fetch_many, fetch_one, raw_query, save, update & transaction
+- [x] Add new examples
+- [x] Improved the way to build the Node to avoid waste memory.
+
 ## TODO
 
-- [ ] Finish the implementation for Gremlin based Graph databases
-- [ ] Improve speed at insertion
+- [ ] Improve documentation
+- [ ] Improve cypher query to avoid query raises when a transaction insert a duplicate node
+- [ ] Add support for Arango DB
+- [ ] Add support for AWS Neptune
+- [ ] Add support for Gremlin
 - [ ] Add support for dates to RedisGraph using transformation of dates to numbers
-- [ ] Add support for `UNIQUE` constraints
-- [ ] Add support for `INDEXES` constraints
-- [ ] Add support for raw Cypher query
-- [ ] Errors, issues, new features and something else
+
+## References
+
+I tried to use good practices for building `SQErzo`. Some references I used:
+
+- https://medium.com/neo4j/cypher-query-optimisations-fe0539ce2e5c
+- https://hub.packtpub.com/advanced-cypher-tricks/
+- https://gist.github.com/jexp/caeb53acfe8a649fecade4417fb8876a
 
 ## License
 

@@ -1,22 +1,17 @@
 from __future__ import annotations
 
 import abc
-import uuid
 import hashlib
 import logging
 
+from typing import List
 from collections import Iterable
 from dataclasses import dataclass, field
 
-from .graph.lang import *
-from .exceptions import SQErzoException
-from .helpers import get_class_properties
-from .config import SQErzoConfig
+from ..exceptions import SQErzoException
+from .helpers import get_class_properties, guuid
 
 log = logging.getLogger("sqerzo")
-
-guuid = lambda: uuid.uuid4().hex
-
 
 class DirtyDict(dict):
     __slots__ = ()
@@ -84,6 +79,8 @@ class GraphElementMetaClass(type):
         if class_name in ("GraphElement", "GraphNode", "GraphEdge"):
             return o
 
+        iterable_types = (list, set, tuple)
+
         #
         # Ensures that all nodes has the property: __label__
         #
@@ -109,16 +106,14 @@ class GraphElementMetaClass(type):
                     f"Examples: MyCustomNode, MyCustomEdge "
                 )
             else:
-                o.__labels__ = [label]
+                o.__labels__ = {label}
 
         else:
             # Check types
-            if not isinstance(o.__labels__, Iterable):
-                raise SQErzoException(
-                    f"__labels__ property of '{class_name}' must be a iterable"
-                )
+            if not isinstance(o.__labels__, iterable_types):
+                o.__labels__ = [o.__labels__]
 
-            o.__labels__ = list(o.__labels__)
+            o.__labels__ = set(o.__labels__)
 
         try:
             class_props = get_class_properties(o)
@@ -128,13 +123,19 @@ class GraphElementMetaClass(type):
             )
 
         if not hasattr(o, "__keys__"):
-            o.__keys__ = ("identity",)
+            o.__keys__ = {"identity"}
+
         else:
+            # Check types
+            if not isinstance(o.__keys__, iterable_types):
+                o.__keys__ = [o.__keys__]
+
+            o.__keys__ = set(o.__keys__)
 
             #
-            # Check key values are in class properties
+            # Check attribute values are in class properties
             #
-            if missing := set(o.__keys__) - class_props:
+            if missing := o.__keys__ - class_props:
                 raise SQErzoException(
                     f"__keys__ has a value missing in class property "
                     f"'{class_name}': {missing} "
@@ -142,34 +143,51 @@ class GraphElementMetaClass(type):
 
 
         if hasattr(o, "__unique__"):
+
+            # Check types
+            if not isinstance(o.__unique__, iterable_types):
+                o.__unique__ = [o.__unique__]
+
             # Fix duplicates
-            o.__unique__ = tuple(set(o.__unique__))
+            o.__unique__ = set(o.__unique__)
 
             #
-            # Check key values are in class properties
+            # Check attribute values are in class properties
             #
-            if missing := set(o.__unique__) - class_props:
+            if missing := o.__unique__ - class_props:
                 raise SQErzoException(
                     f"__unique__ has a value missing in class property "
                     f"'{class_name}': {missing} "
                 )
+        else:
+            o.__unique__ = set()
 
         if hasattr(o, "__indexes__"):
+
+            # Check types
+            if not isinstance(o.__indexes__, iterable_types):
+                o.__indexes__ = [o.__indexes__]
+
             # Fix duplicates
-            o.__indexes__ = tuple(set(o.__indexes__))
+            o.__indexes__ = set(o.__indexes__)
+            o.__indexes__.add("identity")  # Ensures identity
 
             #
-            # Check key values are in class properties
+            # Check attribute values are in class properties
             #
-            if missing := set(o.__indexes__) - class_props:
+            if missing := o.__indexes__ - class_props:
                 raise SQErzoException(
                     f"__indexes__ has a value missing in class property "
                     f"'{class_name}': {missing} "
                 )
+        else:
+            o.__indexes__ = {"identity"}
 
         #
         # Track object
         #
+        from sqerzo.config import SQErzoConfig
+
         SQErzoConfig.SETUP_OBJECTS.append(o)
 
         # Attack meta properties
@@ -197,36 +215,15 @@ class GraphElement(metaclass=GraphElementMetaClass):
 
         super(GraphElement, self).__setattr__(key, value)
 
-
-
     def add_label(self, label_name: str):
         if not label_name:
             return
 
-        try:
-            l = [label_name, *self.__labels__]
+        self.__labels__.add(label_name)
 
-            self.__labels__ = list(set(l))
-        except TypeError as e:
-            pass
-
+    @abc.abstractmethod
     def clone(self, exclude: List[str] = None) -> GraphElement:
-        public_attrs = {
-            k: v
-            for k, v in self.__dict__.items()
-            if not k.startswith("_") and k not in exclude
-        }
-
-        o = self.__class__(**public_attrs)
-
-        # Setup private properties
-        for k, v in self.__dict__.items():
-            if not k.startswith("_") or k in exclude:
-                continue
-
-            setattr(o, k, v)
-
-        return o
+        raise NotImplementedError()
 
     @abc.abstractmethod
     def query_create(self) -> str:
@@ -243,113 +240,52 @@ class GraphElement(metaclass=GraphElementMetaClass):
     def labels(self) -> str:
         return ":".join(self.__labels__)
 
-    def make_identity(self) -> str:
-        l = self.labels()
-
-        if self.__keys__ == ("identity",) and not self.identity:
-            self.identity = guuid()
-
-        q = "#".join(
-            f"{k}:{v}"
-            for k, v in self.__dict__.items() if k in self.__keys__
-        )
-
-        res = f"{l}#{q}"
-
-        return hashlib.sha512(res.encode()).hexdigest()
 
 @dataclass
 class GraphNode(GraphElement):
     properties: DirtyDict = field(default_factory=DirtyDict)
     identity: str = None
 
-    def query_get_node(self) -> str:
-        """Get current node from db graph"""
-        labels = ":".join(self.__labels__)
+    @classmethod
+    def from_query_results(cls, result_data: object):
+        properties = {
+            k:v for k, v in result_data.properties.items()
+            if k not in ("identifier",)
+        }
+        custom_class_properties = {
+            k: result_data.properties[k]
+            for k in cls.__annotations__.keys()
+        }
 
-        tmp_prop = prepare_params({
-            k: getattr(self, k)
-            for k in self.__keys__
-        }, operation="query")
+        config = {
+            **custom_class_properties,
+            "identity": result_data.properties["identity"],
+            "properties": DirtyDict(properties)
+        }
 
-        prop = f"{' and '.join(tmp_prop)}"
+        return cls(**config)
 
-        return f"""
-        MATCH (a:{labels})
-        WHERE {prop}
-        RETURN a.identity
-        """
+    def make_identity(self) -> str:
+        if self.identity:
+            return self.identity
 
-    def query_create(self) -> str:
-        if not self.identity:
-            self.identity = self.make_identity()
+        l = self.labels()
 
-            # Do not include in dirty properties
-            del self.__dirty_properties__["identity"]
+        key_builders = [*self.__keys__]
 
-        labels = self.labels()
+        if not (set(self.__keys__) - {"identity"}) and not self.identity:
+            key_builders.append(guuid())
 
-        tmp_prop = [f"identity: '{self.identity}'"]
-        tmp_prop.extend(prepare_params(self.properties))
-        tmp_prop.extend(prepare_params({
-            k: v
-            for k, v in self.__dict__.items()
-            if k not in ("properties","identity") and not k.startswith("_")
-        }))
+        q = "#".join(
+            f"{k}:{v}"
+            for k, v in self.__dict__.items() if k in key_builders
+        )
 
-        prop = f"{{{', '.join(tmp_prop)}}}"
+        v =  hashlib.sha512(f"{l}#{q}".encode()).hexdigest()
 
-        return f"CREATE (:{labels} {prop})"
+        self.identity = v
 
-    def query_update(self) -> str:
-        # Get properties that was modified
-
-        #
-        # Find only properties that was modified
-        #
-        sets = []
-        nodes = []
-
-        #
-        # Find changes in properties of class with simple types: int, str...
-        #
-        for prop, old_value in self.__dirty_properties__.items():
-
-            if prop == "__labels__":
-                nodes.append(f"p:{':'.join(old_value)}")
-                sets.append(f"p:{self.labels()}")
-            else:
-                sets.extend(prepare_params(
-                    {
-                        prop: getattr(self, prop)
-                    },
-                    operation="update",
-                    node_name="p"
-                ))
-
-        #
-        # Find changes in 'properties' that is a DirtyDict, a custom dictionary
-        #
-        for prop, old_value in self.properties.__dirty_properties__.items():
-            sets.extend(prepare_params(
-                {
-                    prop: self.properties[prop]
-                },
-                operation="update",
-                node_name="p"
-            ))
-
-        q_nodes = ", ".join(f"({x})" for x in nodes)
-        q_sets = ", ".join(sets)
-
-        q = f"""
-        MATCH {q_nodes}
-        WHERE p.identity = '{self.identity}'
-        SET {q_sets}
-        """
-
-        return q
-
+        return v
 
 @dataclass
 class GraphEdge(GraphElement):
@@ -358,25 +294,18 @@ class GraphEdge(GraphElement):
     properties: dict = field(default_factory=dict)
     identity: str = None
 
-    def query_create(self) -> str:
-        if not self.identity:
-            self.identity = self.make_identity()
+    def make_identity(self) -> str:
+        if self.identity:
+            return self.identity
 
-        labels = self.labels()
+        l = self.labels()
+        n = f"{self.source.make_identity()}#{self.source.make_identity()}"
 
-        tmp_prop = [f"identity: '{self.identity}'"]
-        tmp_prop.extend(prepare_params(self.properties))
+        v =  hashlib.sha512(f"{l}#{n}".encode()).hexdigest()
 
-        source_labels = self.source.labels()
-        dest_labels = self.destination.labels()
+        self.identity = v
 
-        prop = f"{{{', '.join(tmp_prop)}}}"
+        return v
 
-        q = f"""
-        MATCH (a:{source_labels}),(b:{dest_labels})
-        WHERE a.identity = '{self.source.identity}' AND b.identity = '{self.destination.identity}'
-        CREATE (a)-[r:{labels} {prop}]->(b)
-        RETURN type(r)
-        """
 
-        return q
+__all__ = ("GraphNode", "GraphEdge", "GraphElement", "DirtyDict")

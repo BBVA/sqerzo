@@ -4,7 +4,7 @@ import pickle
 from datetime import datetime
 from dataclasses import dataclass
 
-from sqerzo import GraphEdge, GraphNode, SQErzoGraph as gh
+from sqerzo import GraphEdge, GraphNode, SQErzoGraph
 
 @dataclass
 class PersonNode(GraphNode):
@@ -58,7 +58,8 @@ class CCEdge(GraphEdge):
 
 
 def create_graph(database_path: str, db_type: str, count: int = 50):
-    gh.setup(db_type)
+
+    gh = SQErzoGraph()
     gh.truncate()
 
     #
@@ -175,6 +176,6 @@ def create_graph(database_path: str, db_type: str, count: int = 50):
 
 
 if __name__ == '__main__':
-    # create_graph("mail.db", "redis://127.0.0.1:7000/?graph=gmail")
-    create_graph("mail.db", "neo4j://neo4j:s3cr3t@127.0.0.1:7687/?graph=gmail")
+    create_graph("mail.db", "redis://127.0.0.1:7000/?graph=gmail")
+    # create_graph("mail.db", "neo4j://neo4j:s3cr3t@127.0.0.1:7687/?graph=gmail")
     # create_graph("mail.db", "gremlin://127.0.0.1?graph=gmail")

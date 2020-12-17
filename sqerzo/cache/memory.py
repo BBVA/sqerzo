@@ -1,4 +1,4 @@
-class _GraphNodeCache:
+class MemoryGraphNodeCache:
 
     def __init__(self):
         self._cache = {}
@@ -14,9 +14,16 @@ class _GraphNodeCache:
             )
             return k
 
-    def get(self, node: object) -> object or None:
-        # key = self.make_key(node)
+    def get_id(self, node_id: str) -> object or None:
+        try:
+            return self._cache[node_id]
+        except KeyError:
+            return None
 
+    def save_id(self, node_id: str, obj: object) -> object or None:
+        self._cache[node_id] = obj
+
+    def get(self, node: object) -> object or None:
         try:
             return self._cache[node.make_identity()]
         except KeyError:
@@ -26,6 +33,5 @@ class _GraphNodeCache:
         key = self.make_key(node)
         self._cache[key] = node
 
-MemoryGraphNodeCache = _GraphNodeCache()
 
 __all__ = ("MemoryGraphNodeCache",)
