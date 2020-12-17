@@ -17,8 +17,7 @@
     - [Start RedisGraph](#start-redisgraph)
   - [Simple usage](#simple-usage)
   - [Transactions](#transactions)
-- [Examples](#examples)
-  - [Load mails to a Graph](#load-mails-to-a-graph)
+  - [More complex example: Load mails to a Graph](#more-complex-example-load-mails-to-a-graph)
 - [ChangeLog](#changelog)
   - [Release 0.1.0](#release-010)
 - [TODO](#todo)
@@ -179,9 +178,7 @@ if __name__ == '__main__':
     create_graph("neo4j://neo4j:s3cr3t@127.0.0.1:7687/?graph=email")
 ```
 
-## Examples
-
-### Load mails to a Graph
+### More complex example: Load mails to a Graph
 
 If you need a more complex example, you can find in it [examples/email_graph.py](https://github.com/cr0hn/sqerzo/blob/master/examples/email_graph.py).
 
