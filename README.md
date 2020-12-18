@@ -17,7 +17,7 @@
     - [Start RedisGraph](#start-redisgraph)
   - [Simple usage](#simple-usage)
   - [Transactions](#transactions)
-  - [Raw Queries](#raw)
+  - [Raw Queries](#raw-queries)
   - [More complex example: Load mails to a Graph](#more-complex-example-load-mails-to-a-graph)
 - [ChangeLog](#changelog)
   - [Release 0.1.1](#release-011)
