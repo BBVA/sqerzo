@@ -1,6 +1,6 @@
 import urllib.parse as pr
 
-from typing import List, Iterable
+from typing import List, Iterable, Callable
 
 from neo4j import GraphDatabase
 
@@ -13,24 +13,37 @@ from .interfaces import CypherSQErzoGraphConnection
 
 class Neo4jSQErzoQueryResponse(SQErzoQueryResponse):
 
-    def __init__(self, graph: SQErzoGraphConnection, query: str, **kwargs):
+    def __init__(self,
+                 graph: SQErzoGraphConnection,
+                 query: str,
+                 **kwargs
+                 ):
         self.query = query
         self.graph = graph
         self.params = kwargs
 
     def __iter__(self):
         with self.graph.connection.session() as session:
+
             ret = session.run(self.query, **self.params)
 
-            for node in ret.value():
-                yield ResultElement(
-                    id=node.id,
-                    labels=list(node.labels),
-                    properties=node._properties
-                )
+            for record in ret:
 
+                res = []
+
+                for k in record.keys():
+                    for node in record.values(k):
+                        res.append(ResultElement(
+                            id=node.id,
+                            properties=node._properties,
+                            labels=list(node.labels),
+                            alias=k
+                        ))
+
+                yield res
 
 class Neo4JSQErzoGraphConnection(CypherSQErzoGraphConnection):
+
     SUPPORTED_TYPES = ("str", "int", "float", "bool", "datetime")
 
     def __init__(self, connection_string: str):
@@ -43,12 +56,17 @@ class Neo4JSQErzoGraphConnection(CypherSQErzoGraphConnection):
         with self.connection.session() as session:
             session.run(query, **kwargs)
 
-    def query_response(self, query: str, **kwargs) -> Iterable[ResultElement]:
-        return Neo4jSQErzoQueryResponse(self, query, **kwargs)
 
-    def query(self, query: str, **kwargs) -> None:
+    def query_response(self, query: str, **kwargs) -> Iterable[ResultElement]:
+        return Neo4jSQErzoQueryResponse(
+            self,
+            query,
+            **kwargs
+        )
+
+    def query(self, query: str, **kwargs) -> None or object:
         with self.connection.session() as session:
-            session.run(query, **kwargs)
+            return session.run(query, **kwargs)
 
     def save_element(self, graph_element: GraphElement) -> None or SQErzoElementExistException:
         try:

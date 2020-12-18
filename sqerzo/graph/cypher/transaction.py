@@ -2,7 +2,7 @@ from collections import defaultdict
 
 from .lang import create_query
 from ..transaction import SQErzoTransaction
-from .model import GraphElement, GraphNode, GraphEdge
+from ..model import GraphElement, GraphNode, GraphEdge
 
 class CypherSQErzoTransaction(SQErzoTransaction):
 

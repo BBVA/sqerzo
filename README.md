@@ -17,8 +17,10 @@
     - [Start RedisGraph](#start-redisgraph)
   - [Simple usage](#simple-usage)
   - [Transactions](#transactions)
+  - [Raw Queries](#raw)
   - [More complex example: Load mails to a Graph](#more-complex-example-load-mails-to-a-graph)
 - [ChangeLog](#changelog)
+  - [Release 0.1.1](#release-011)
   - [Release 0.1.0](#release-010)
 - [TODO](#todo)
 - [References](#references)
@@ -133,6 +135,83 @@ This is the result database in RedisGrap:
 
 ![user_meet_redisgraph logo](https://raw.githubusercontent.com/cr0hn/sqerzo/master/images/examples/user_meet_redisgraph.png)
 
+### Raw queries
+
+`SQErzo` try to be simple. So, if you want to do complex queries, you'll write them in the DB Engine language. 
+
+This example explains how to perform a query in Open Cypher language and map the results to Python Classes:
+
+```python
+from dataclasses import dataclass
+
+from sqerzo import GraphEdge, GraphNode, SQErzoGraph
+
+class MeetEdge(GraphEdge):
+    pass
+
+class WorksWithEdge(GraphEdge):
+    pass
+
+@dataclass
+class UserNode(GraphNode):
+    __keys__ = "email"
+
+    name: str = None
+    email: str = None
+
+
+def create_graph(connection_string: str, nodes_count = 500):
+    gh = SQErzoGraph(connection_string)
+    gh.truncate()  # Drop database
+
+    #
+    # Add some data and relations: User1 -[meet]-> User 2
+    #
+    with gh.transaction() as tx:
+
+        for n in range(nodes_count):
+            u1_name = f"uname{n}"
+            d1_name = f"dname{n}"
+
+            u1 = UserNode(name=u1_name, email=f"{u1_name}@{u1_name}.com")
+            d1 = UserNode(name=d1_name, email=f"{d1_name}@{d1_name}.com")
+
+            tx.add(u1)
+            tx.add(d1)
+
+            u2_meet_u1 = MeetEdge(
+                source=u1,
+                destination=d1
+            )
+            u1_meet_u2 = MeetEdge(
+                source=d1,
+                destination=u1
+            )
+            tx.add(u1_meet_u2)
+            tx.add(u2_meet_u1)
+
+    #
+    # HERE STARTS THE QUERY
+    #
+
+    # Execute will return a list of lists: [ 
+    #   [UserNode("u1"), UserNode("u2")], 
+    #   [UserNode("u1"), UserNode("u2")], 
+    #   ... 
+    # ]
+    q = gh.Query.raw(
+        "match (u1:User)-[:Meet]->(u2:User) return u1, u2"
+    ).execute(map_to={"u1": UserNode, "u2": UserNode})
+    
+    print(q)
+
+if __name__ == '__main__':
+  count = 1000
+  create_graph("redis://127.0.0.1:7000/?graph=email", nodes_count=count)
+  create_graph("neo4j://neo4j:s3cr3t@127.0.0.1:7687/?graph=email", nodes_count=count)
+```
+
+
 ### Transactions
 
 Transactions are useful if you need add a lot of data. You add nodes and edges to a transaction. When they finish then perform the insertions to the database in a very efficient way:
@@ -188,6 +267,10 @@ At this example we load a random generated mail inbox (generation script is also
 
 ## ChangeLog
 
+### Release 0.1.1
+
+- [X] Added queries support for raw queries in DB engine language
+
 ### Release 0.1.0
 
 - [X] Improved speed at insertion by 100x
@@ -209,6 +292,48 @@ At this example we load a random generated mail inbox (generation script is also
 - [ ] Add support for AWS Neptune
 - [ ] Add support for Gremlin
 - [ ] Add support for dates to RedisGraph using transformation of dates to numbers
+
+## Implementation of Query builder.
+
+Add some method to `Query` builder class. Here some possible examples:
+
+```python
+from dataclasses import dataclass
+
+from sqerzo import GraphEdge, GraphNode, SQErzoGraph
+
+
+class MeetEdge(GraphEdge):
+    pass
+
+class WorksWithEdge(GraphEdge):
+    pass
+
+@dataclass
+class UserNode(GraphNode):
+    __keys__ = "email"
+
+    name: str = None
+    email: str = None
+
+@dataclass
+class OtherUserNode(GraphNode):
+    __keys__ = "email"
+
+    name: str = None
+    email: str = None
+
+
+gh = SQErzoGraph("redis://")
+gh.Q().from(Node1).to(node2).execute()
+gh.Q().from(name="me").to(UserNode).execute()
+gh.Q().from(name="me", email="me@me.com").to((UserNode, "User")).execute()
+gh.Q().from(name="me").across((WorksWithEdge, "WorksWith")).to((UserNode, "OtherUser")).execute()
+gh.Q().to((UserNode, "OtherUser")).execute()
+gh.Q().from(OtherUserNode).execute()
+gh.Q().from(UserNode).execute()
+```
+
 
 ## References
 

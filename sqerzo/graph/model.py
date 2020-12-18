@@ -250,7 +250,7 @@ class GraphNode(GraphElement):
     def from_query_results(cls, result_data: object):
         properties = {
             k:v for k, v in result_data.properties.items()
-            if k not in ("identifier",)
+            if k not in ("identifier", "alias")
         }
         custom_class_properties = {
             k: result_data.properties[k]

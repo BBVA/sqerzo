@@ -4,8 +4,8 @@ import abc
 
 from typing import List, Iterable, Type
 
+from ..model import GraphElement
 from .lang import create_query, prepare_params
-from .model import GraphElement, DirtyDict
 from ...exceptions import SQErzoElementExistException, SQErzoException
 from ..interfaces import SQErzoGraphConnection, ResultElement
 

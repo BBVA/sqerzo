@@ -6,12 +6,14 @@ from typing import List, Iterable, Type
 from dataclasses import dataclass
 
 from .model import GraphElement
+from .query import Query
 from ..exceptions import SQErzoElementExistException, SQErzoException
 
 
 @dataclass
 class ResultElement:
     id: str = None  # DB Id
+    alias: str = None  # DB Id
     labels: List[str] = None
     properties: dict = None
 
@@ -92,5 +94,8 @@ class SQErzoGraphConnection(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def truncate(self):
         raise NotImplementedError()
+
+    def query_builder(self, graph) -> Query:
+        return Query(graph)
 
 __all__ = ("ResultElement", "SQErzoGraphConnection",)

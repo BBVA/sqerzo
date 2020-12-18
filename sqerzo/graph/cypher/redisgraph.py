@@ -20,16 +20,20 @@ class RedisGraphSQErzoQueryResponse(SQErzoQueryResponse):
         self.params = kwargs
 
     def __iter__(self):
-        for res in self.graph.connection.query(
-                self.query, self.params
-        ).result_set:
+        query_results = self.graph.connection.query(self.query, self.params)
 
-            for node in res:
-                yield ResultElement(
-                    id=node.__dict__["id"],
-                    labels=[node.__dict__["label"]],
-                    properties=node.__dict__["properties"]
-                )
+        for res in query_results.result_set:
+
+            yield [
+                    ResultElement(
+                        id=node.id,
+                        alias=query_results.header[i][1].decode(),
+                        labels=list(node.label),
+                        properties=node.properties
+                    )
+                for i, node in enumerate(res)
+            ]
+
 
 class RedisSQErzoTransaction(CypherSQErzoTransaction):
     SUPPORTED_TYPES = ("str", "int", "float", "bool")

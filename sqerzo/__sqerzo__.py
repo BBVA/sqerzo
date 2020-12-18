@@ -9,6 +9,7 @@ from .cache import *
 from .config import *
 from .exceptions import *
 from .graph.model import *
+from .graph.query import Query
 from .graph.transaction import SQErzoTransaction
 from .graph.interfaces import SQErzoGraphConnection
 from .graph.cypher.neo4j import Neo4JSQErzoGraphConnection
@@ -61,8 +62,13 @@ class SQErzoGraph:
         """Remove all nodes and edges of database"""
         self.db_engine.truncate()
 
-    def raw_query(self, query: str, **kwargs):
-        self.db_engine.query(query, **kwargs)
+    @property
+    def Q(self) -> Query:
+        return self.db_engine.query_builder(self)
+
+    @property
+    def Query(self) -> Query:
+        return self.db_engine.query_builder(self)
 
     def fetch_many(self,
                    node_type: Type[GraphElement] or GraphElement,

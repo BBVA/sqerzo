@@ -17,13 +17,13 @@ class UserNode(GraphNode):
     name: str = None
 
 
-def create_graph(connection_string: str):
+def create_graph(connection_string: str, count: int = 500):
     gh = SQErzoGraph(connection_string)
     gh.truncate()  # Drop database
 
     with gh.transaction() as tx:
 
-        for n in range(10):
+        for n in range(count):
             u1 = UserNode(name=f"UName-{n}")
             d1 = UserNode(name=f"DName-{n}")
 

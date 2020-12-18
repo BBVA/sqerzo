@@ -1,4 +1,4 @@
-import random
+import time
 import logging
 
 from dataclasses import dataclass
@@ -77,13 +77,31 @@ def create_graph(connection_string: str, nodes_count = 500):
             tx.add(work_1)
             tx.add(work_2)
 
+    q = gh.Query.raw(
+        "match (u1:User)-[:Meet]->(u2:User) return u1, u2"
+    ).execute(map_to={"u1": UserNode, "u2": UserNode})
 
+    print(q)
 
 if __name__ == '__main__':
-    print("Redis...")
-    # create_graph("redis://127.0.0.1:7000/?graph=email", nodes_count=1000000)
-    print("Neo4j...")
-    create_graph(
-        "neo4j://neo4j:s3cr3t@127.0.0.1:7687/?graph=email",
-        nodes_count=50
-    )
+
+    count = 2
+
+    # This values are from logic of program
+    total_nodes = (count * 2) + int(count / 4)
+    total_edges = (total_nodes * 2) + int(count / 2)
+
+    total = total_edges + total_edges
+
+    print(f"[*] Inserting {total} nodes/edges in Redis...", end='', flush=True)
+
+    start = time.time()
+    create_graph("redis://127.0.0.1:7000/?graph=email", nodes_count=count)
+    end = time.time()
+    print(f"{end - start} seconds")
+
+    print(f"[*] Inserting {total} nodes/edges in Neo4j...", end='', flush=True)
+    start = time.time()
+    create_graph("neo4j://neo4j:s3cr3t@127.0.0.1:7687/?graph=email", nodes_count=count)
+    end = time.time()
+    print(f"{end - start} seconds")
