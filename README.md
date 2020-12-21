@@ -292,10 +292,7 @@ At this example we load a random generated mail inbox (generation script is also
 - [ ] Add support for AWS Neptune
 - [ ] Add support for Gremlin
 - [ ] Add support for dates to RedisGraph using transformation of dates to numbers
-
-## Implementation of Query builder.
-
-Add some method to `Query` builder class. Here some possible examples:
+- [ ] Implementation of Query builder. Add some method to `Query` builder class. Here some possible examples:
 
 ```python
 from dataclasses import dataclass
