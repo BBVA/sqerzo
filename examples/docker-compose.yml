@@ -1,0 +1,22 @@
+version: "3.7"
+services:
+
+  redisgraph:
+    image: redislabs/redisgraph
+    ports:
+    - 7000:6379
+
+  redisinsight:
+    image: redislabs/redisinsight:latest
+    ports:
+    - 8001:8001
+    links:
+      - redisgraph
+
+  neo4j:
+    image: neo4j
+    entrypoint:
+      - NEO4J_AUTH=neo4j/s3cr3t
+    ports:
+    - 7474:7474
+    - 7687:7687
