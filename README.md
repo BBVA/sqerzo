@@ -1,6 +1,6 @@
 ![SQErzo logo](https://raw.githubusercontent.com/cr0hn/sqerzo/master/images/logo-250x250.png)
 
-## `SQErzo` Tinty ORM for Graph databases
+## `SQErzo` Tiny ORM for Graph databases
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -30,9 +30,9 @@
 
 ## What is SQErzo
 
-`SQErzo` is simple and tiny ORM for graph databases. 
+`SQErzo` is simple and tiny ORM ([Object-Relational Mapping](https://en.wikipedia.org/wiki/Object%E2%80%93relational_mapping)) for graph databases for Python developers. 
 
-It's compatible with these databases that supports Open Cypher language.
+It's compatible with databases that supports [Open Cypher language](https://www.opencypher.org/).
 
 ## Which databases are supported
 
@@ -46,7 +46,7 @@ It's compatible with these databases that supports Open Cypher language.
 
 ## Why use SQErzo?
 
-`SQErzo` intermediates between the Graph DB and your code and can manage database differences between them. For examples:
+`SQErzo` intermediates between the graph database and your application logic in a database agnostic way.  As such, `SQErzo` abstracts the differences between the different databases. For examples:
 
 - RedisGraph doesn't support Date times or CONSTRAINTS, `SQErzo` does the magic to hide that.
 - Neo4j need different channels for writing than for read. `SQErzo` does the magic to hide that.
