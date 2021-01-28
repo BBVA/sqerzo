@@ -105,6 +105,9 @@ class RedisSQErzoGraphConnection(CypherSQErzoGraphConnection):
             else:
                 yield False, n
 
+        if not graph_element:
+            raise SQErzoElementExistException("Node update needs a valid Node")
+
         for need_create, n in update_fixed_label_nodes(graph_element):
 
             # No multiple labels supported. Need to be created a new node

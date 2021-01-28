@@ -247,7 +247,7 @@ class GraphNode(GraphElement):
     identity: str = None
 
     @classmethod
-    def from_query_results(cls, result_data: object):
+    def from_query_results(cls, result_data: object or list[object]):
         properties = {
             k:v for k, v in result_data.properties.items()
             if k not in ("identifier", "alias")
@@ -274,11 +274,12 @@ class GraphNode(GraphElement):
         key_builders = [*self.__keys__]
 
         if not (set(self.__keys__) - {"identity"}) and not self.identity:
-            key_builders.append(guuid())
+            self.identity = guuid()
 
         q = "#".join(
-            f"{k}:{v}"
-            for k, v in self.__dict__.items() if k in key_builders
+            f"{k}:{'' if v is None else v}"
+            for k, v in self.__dict__.items()
+            if k in key_builders
         )
 
         v =  hashlib.sha512(f"{l}#{q}".encode()).hexdigest()

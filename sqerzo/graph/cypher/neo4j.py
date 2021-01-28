@@ -71,7 +71,7 @@ class Neo4JSQErzoGraphConnection(CypherSQErzoGraphConnection):
     def save_element(self, graph_element: GraphElement) -> None or SQErzoElementExistException:
         try:
             super(Neo4JSQErzoGraphConnection, self).save_element(graph_element)
-        except Exception:
+        except Exception as e:
             raise SQErzoElementExistException(
                 f"Graph element with id '{graph_element.identity}' already exits"
             )

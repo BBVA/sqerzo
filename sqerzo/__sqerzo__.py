@@ -72,14 +72,14 @@ class SQErzoGraph:
 
     def fetch_many(self,
                    node_type: Type[GraphElement] or GraphElement,
-                   **kwargs: dict) \
+                   **kwargs) \
             -> Iterable[GraphElement] or SQErzoException:
         for x in self.db_engine.fetch_nodes(node_type, **kwargs):
             yield x
 
     def fetch_one(self,
                    node_type: Type[GraphElement] or GraphElement,
-                   **kwargs: dict) \
+                   **kwargs) \
             -> Iterable[GraphElement] or SQErzoException:
 
         for res in self.fetch_many(node_type, **kwargs):

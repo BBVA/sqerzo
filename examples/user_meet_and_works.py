@@ -87,7 +87,7 @@ if __name__ == '__main__':
 
     count = 2
 
-    # This values are from logic of program
+    # This values are from logic of program to avoid a lot of combinations
     total_nodes = (count * 2) + int(count / 4)
     total_edges = (total_nodes * 2) + int(count / 2)
 

@@ -59,7 +59,7 @@ class CCEdge(GraphEdge):
 
 def create_graph(database_path: str, db_type: str, count: int = 50):
 
-    gh = SQErzoGraph()
+    gh = SQErzoGraph(db_type)
     gh.truncate()
 
     #
@@ -92,7 +92,7 @@ def create_graph(database_path: str, db_type: str, count: int = 50):
             date=user_email["Date"],
             message_id=user_email["Message-Id"]
         )
-        gh.get_or_create(email)
+        gh.save(email)
 
         #
         # Check if mail is a reply of other, link them
@@ -104,7 +104,7 @@ def create_graph(database_path: str, db_type: str, count: int = 50):
             name=user_email["From"]["name"],
             email=user_email["From"]["email"]
         )
-        gh.get_or_create(from_person)
+        gh.save(from_person)
 
         # -------------------------------------------------------------------------
         # From Person -[Sent]-> Email
@@ -113,7 +113,7 @@ def create_graph(database_path: str, db_type: str, count: int = 50):
             source=from_person,
             destination=email,
         )
-        gh.get_or_create(from_rel_mail)
+        gh.save(from_rel_mail)
 
         # -------------------------------------------------------------------------
         # Stores To
@@ -123,7 +123,7 @@ def create_graph(database_path: str, db_type: str, count: int = 50):
                 name=to["name"],
                 email=to["email"]
             )
-            gh.get_or_create(to_person)
+            gh.save(to_person)
 
             # -------------------------------------------------------------------------
             # Email -[To]-> Person
@@ -132,7 +132,7 @@ def create_graph(database_path: str, db_type: str, count: int = 50):
                 source=email,
                 destination=to_person
             )
-            gh.get_or_create(to_rel_mail)
+            gh.save(to_rel_mail)
 
         # -------------------------------------------------------------------------
         # Stores Mail CC
@@ -142,7 +142,7 @@ def create_graph(database_path: str, db_type: str, count: int = 50):
                 email=user_to["email"],
                 name=user_to["name"]
             )
-            gh.get_or_create(p)
+            gh.save(p)
 
             # -------------------------------------------------------------------------
             # Email -[CC]-> Person
@@ -151,7 +151,7 @@ def create_graph(database_path: str, db_type: str, count: int = 50):
                 source=email,
                 destination=p
             )
-            gh.get_or_create(to_rel)
+            gh.save(to_rel)
 
         print(f"\r[*] Processed: {c}/{total}", end='', flush=True)
         c += 1
@@ -161,7 +161,7 @@ def create_graph(database_path: str, db_type: str, count: int = 50):
     # Link emails
     #
     for source_node, dst_in_reply in in_reply_rel:
-        if reply_node := gh.fetch_one(MailNode, {"message_id": dst_in_reply}):
+        if reply_node := gh.fetch_one(MailNode, **{"message_id": dst_in_reply}):
             reply_node.add_label("Reply")
 
             gh.update(reply_node)
@@ -170,12 +170,12 @@ def create_graph(database_path: str, db_type: str, count: int = 50):
             # Email Source -[Reply]-> Reply Email
             #
             ed = ReplyToEdge(source_node, reply_node)
-            gh.get_or_create(ed)
+            gh.save(ed)
 
     print("[*] Done")
 
 
 if __name__ == '__main__':
     create_graph("mail.db", "redis://127.0.0.1:7000/?graph=gmail")
-    # create_graph("mail.db", "neo4j://neo4j:s3cr3t@127.0.0.1:7687/?graph=gmail")
+    create_graph("mail.db", "neo4j://neo4j:s3cr3t@127.0.0.1:7687/?graph=gmail")
     # create_graph("mail.db", "gremlin://127.0.0.1?graph=gmail")

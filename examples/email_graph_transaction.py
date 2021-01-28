@@ -156,7 +156,8 @@ def create_graph(database_path: str, db_type: str, count: int = 50):
                 )
                 tx.add(to_rel)
 
-    return
+            c += 1
+    # return
     #
     # Link emails
     #
@@ -176,9 +177,5 @@ def create_graph(database_path: str, db_type: str, count: int = 50):
 
 
 if __name__ == '__main__':
-    # create_graph("mail.db", "redis://127.0.0.1:7000/?graph=gmail")
-    # create_graph("mail.db", "neo4j://neo4j:s3cr3t@127.0.0.1:7687/?graph=gmail")
-
-    create_graph("gmail.db", "redis://127.0.0.1:7000/?graph=gmail")
-    create_graph("gmail.db", "neo4j://neo4j:s3cr3t@127.0.0.1:7687/?graph=gmail")
-    # create_graph("mail.db", "gremlin://127.0.0.1?graph=gmail")
+    create_graph("mail.db", "redis://127.0.0.1:7000/?graph=gmail")
+    create_graph("mail.db", "neo4j://neo4j:s3cr3t@127.0.0.1:7687/?graph=gmail")

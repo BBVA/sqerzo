@@ -16,10 +16,15 @@
     - [Start Neo4j](#start-neo4j)
     - [Start RedisGraph](#start-redisgraph)
   - [Simple usage](#simple-usage)
+  - [Recovering database nodes by their ID](#recovering-database-nodes-by-their-id)
+  - [Recovering database nodes by their properties](#recovering-database-nodes-by-their-properties)
   - [Raw queries](#raw-queries)
   - [Transactions](#transactions)
   - [More complex example: Load mails to a Graph](#more-complex-example-load-mails-to-a-graph)
 - [ChangeLog](#changelog)
+  - [Release 0.1.2](#release-012)
+    - [Core](#core)
+    - [Other](#other)
   - [Release 0.1.1](#release-011)
   - [Release 0.1.0](#release-010)
 - [TODO](#todo)
@@ -134,6 +139,123 @@ This is the result database in Node4j:
 This is the result database in RedisGrap:
 
 ![user_meet_redisgraph logo](https://raw.githubusercontent.com/cr0hn/sqerzo/master/images/examples/user_meet_redisgraph.png)
+
+
+### Recovering database nodes by their ID
+
+```python
+from dataclasses import dataclass
+
+from sqerzo import GraphEdge, GraphNode, SQErzoGraph
+from sqerzo.exceptions import SQErzoElementExistException
+
+@dataclass
+class UserNode(GraphNode):
+    name: str = None
+
+def create_graph(connection_string: str):
+    gh = SQErzoGraph(connection_string)
+    gh.truncate()  # Drop database
+
+    user = UserNode(name=f"UName-{n}")
+    gh.save(user)
+
+    # First argument: node ID we want to recover
+    # Second argument: node class in which we want to map the result
+    recovered_user = gh.get_node_by_id(user.id, UserNode)
+```
+
+### Recovering database nodes by their properties
+
+**Getting one node:**
+
+```python
+from dataclasses import dataclass
+
+from sqerzo import GraphEdge, GraphNode, SQErzoGraph
+
+@dataclass
+class UserNode(GraphNode):
+    __keys__ = ["name"]
+
+    name: str = None
+
+def create_graph(connection_string: str):
+    gh = SQErzoGraph(connection_string)
+    gh.truncate()  # Drop database
+
+    u1 = UserNode(name="Eustaquio")
+    gh.save(u1)
+    u2 = UserNode(name="Guachinche")
+    gh.save(u2)
+    
+    # First argument: node ID we want to recover
+    # Second argument: node class in which we want to map the result
+    node = gh.fetch_one(UserNode, name="Eustaquio")
+
+if __name__ == '__main__':
+  create_graph("redis://127.0.0.1:7000/?graph=email")
+  create_graph("neo4j://neo4j:s3cr3t@127.0.0.1:7687/?graph=email")
+```
+
+**Getting multiple nodes:**
+
+```python
+from dataclasses import dataclass
+
+from sqerzo import GraphEdge, GraphNode, SQErzoGraph
+
+@dataclass
+class UserNode(GraphNode):
+    name: str = None
+    age: int = None
+
+def create_graph(connection_string: str):
+    gh = SQErzoGraph(connection_string)
+    gh.truncate()  # Drop database
+
+    u1 = UserNode(name="Eustaquio", age=22)
+    gh.save(u1)
+    u2 = UserNode(name="Guachinche", age=22)
+    gh.save(u2)
+    
+    # First argument: node ID we want to recover
+    # Second argument: node class in which we want to map the result
+    for n in gh.fetch_many(UserNode, age=22):
+        print(n)
+
+if __name__ == '__main__':
+  create_graph("redis://127.0.0.1:7000/?graph=email")
+  create_graph("neo4j://neo4j:s3cr3t@127.0.0.1:7687/?graph=email")
+```
+
+```python
+from dataclasses import dataclass
+
+from sqerzo import GraphEdge, GraphNode, SQErzoGraph
+from sqerzo.exceptions import SQErzoElementExistException
+
+@dataclass
+class UserNode(GraphNode):
+    name: str = None
+
+def create_graph(connection_string: str):
+    gh = SQErzoGraph(connection_string)
+    gh.truncate()  # Drop database
+
+    user = UserNode(name=f"UName-{n}")
+    gh.save(user)
+
+    #
+    # First argument: node ID we want to recover
+    # Second argument: node class in which we want to map the result
+    recovered_user = gh.get_node_by_id(user.id, UserNode)
+
+if __name__ == '__main__':
+  create_graph("redis://127.0.0.1:7000/?graph=email")
+  create_graph("neo4j://neo4j:s3cr3t@127.0.0.1:7687/?graph=email")
+```
+
 
 ### Raw queries
 
@@ -267,6 +389,23 @@ At this example we load a random generated mail inbox (generation script is also
 
 ## ChangeLog
 
+### Release 0.1.2
+
+#### Core
+
+- [X] fixed - Node/Edge id generation when not explicit identity field was provided.
+- [X] fixed - `get_node_by_id(...)` methods that raises execution.
+- [X] fixed - Improved error control.
+- [X] fixed - `fetch_nodes(...)` method, that raises when a query returns more than 1 result.
+- [X] Improved - `fetch_many(...)` and `fetch_one(...)`.
+  
+#### Other
+
+- Added new examples in `examples` folder.
+- Added new examples in README. 
+- Updated examples for new SQErzo API.
+- Updated docker-compose with some fixes.
+
 ### Release 0.1.1
 
 - [X] Added queries support for raw queries in DB engine language
@@ -286,6 +425,7 @@ At this example we load a random generated mail inbox (generation script is also
 
 ## TODO
 
+- [ ] Implement update operations
 - [ ] Improve documentation
 - [ ] Improve cypher query to avoid query raises when a transaction insert a duplicate node
 - [ ] Add support for Arango DB

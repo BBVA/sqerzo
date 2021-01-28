@@ -15,7 +15,7 @@ services:
 
   neo4j:
     image: neo4j
-    entrypoint:
+    environment:
       - NEO4J_AUTH=neo4j/s3cr3t
     ports:
     - 7474:7474

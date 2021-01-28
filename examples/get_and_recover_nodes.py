@@ -50,13 +50,15 @@ def create_graph(connection_string: str):
     # Update some nodes
     for node_id in nodes_ids:
         n: UserNode = gh.get_node_by_id(node_id, UserNode)
-        gh.update(n)
+
+        # Operation currently not implemented
+        # gh.update(n)
 
 
 
 if __name__ == '__main__':
     print("Redis...")
     create_graph("redis://127.0.0.1:7000/?graph=email")
-    # print("Neo4j...")9
-    # create_graph("neo4j://neo4j:s3cr3t@127.0.0.1:7687/?graph=email")
+    print("Neo4j...")
+    create_graph("neo4j://neo4j:s3cr3t@127.0.0.1:7687/?graph=email")
     # create_graph("enterprise+neo4j://neo4j:s3cr3t@127.0.0.1:7687/?graph=email")

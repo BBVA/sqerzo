@@ -28,8 +28,13 @@ class CypherSQErzoGraphConnection(SQErzoGraphConnection):
         MATCH (n {{ identity: '{node_id}' }})
         RETURN n
         """
-        for res in self.query(q):
-            return res
+        if result := self.query_response(q):
+            for res in result:
+                if type(res) is list:
+                    return res[0]
+
+                else:
+                    return res
 
     def save_element(self, graph_element: GraphElement) \
             -> None or SQErzoElementExistException:
@@ -76,8 +81,20 @@ class CypherSQErzoGraphConnection(SQErzoGraphConnection):
         """
 
         with self.query_response(query) as responses:
+
             for res in responses:
-                yield class_constructor.from_query_results(res)
+
+                yield_values = []
+                for r in res:
+                    yield_values.append(
+                        class_constructor.from_query_results(r)
+                    )
+                # yield class_constructor.from_query_results(res)
+
+                if len(yield_values) > 1:
+                    yield yield_values
+                else:
+                    yield yield_values[0]
 
     @property
     def batch_size(self) -> int:
