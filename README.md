@@ -29,6 +29,8 @@
   - [Release 0.1.0](#release-010)
 - [TODO](#todo)
 - [References](#references)
+- [Authors](#authors)
+- [Contributions](#contributions)
 - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -483,7 +485,7 @@ I tried to use good practices for building `SQErzo`. Some references I used:
 
 SQErzo is being developed by BBVA-Labs Security team members.
 
-##Contributions
+## Contributions
 
 Contributions are of course welcome. See [CONTRIBUTING](https://github.com/BBVA/sqerzo/blob/master/CONSTRIBUTING.rst) or skim existing tickets to see where you could help out.
 
