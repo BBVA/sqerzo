@@ -1,4 +1,4 @@
-![SQErzo logo](https://raw.githubusercontent.com/cr0hn/sqerzo/master/images/logo-250x250.png)
+![SQErzo logo](https://raw.githubusercontent.com/BBVA/sqerzo/master/images/logo-250x250.png)
 
 ## `SQErzo` Tiny ORM for Graph databases
 
@@ -134,11 +134,11 @@ if __name__ == '__main__':
 
 This is the result database in Node4j:
 
-![user_meet_neo4j logo](https://raw.githubusercontent.com/cr0hn/sqerzo/master/images/examples/user_meet_neo4j.png)
+![user_meet_neo4j logo](https://raw.githubusercontent.com/BBVA/sqerzo/master/images/examples/user_meet_neo4j.png)
 
 This is the result database in RedisGrap:
 
-![user_meet_redisgraph logo](https://raw.githubusercontent.com/cr0hn/sqerzo/master/images/examples/user_meet_redisgraph.png)
+![user_meet_redisgraph logo](https://raw.githubusercontent.com/BBVA/sqerzo/master/images/examples/user_meet_redisgraph.png)
 
 
 ### Recovering database nodes by their ID
@@ -381,7 +381,7 @@ if __name__ == '__main__':
 
 ### More complex example: Load mails to a Graph
 
-If you need a more complex example, you can find in it [examples/email_graph.py](https://github.com/cr0hn/sqerzo/blob/master/examples/email_graph.py).
+If you need a more complex example, you can find in it [examples/email_graph.py](https://github.com/BBVA/sqerzo/blob/master/examples/email_graph.py).
 
 At this example we load a random generated mail inbox (generation script is also available) into a Graph Database following this [Neo4j Blog Post](https://neo4j.com/blog/data-modeling-pitfalls/) suggestions.
 
@@ -471,7 +471,6 @@ gh.Q().from(OtherUserNode).execute()
 gh.Q().from(UserNode).execute()
 ```
 
-
 ## References
 
 I tried to use good practices for building `SQErzo`. Some references I used:
@@ -480,6 +479,14 @@ I tried to use good practices for building `SQErzo`. Some references I used:
 - https://hub.packtpub.com/advanced-cypher-tricks/
 - https://gist.github.com/jexp/caeb53acfe8a649fecade4417fb8876a
 
+## Authors
+
+SQErzo is being developed by BBVA-Labs Security team members.
+
+##Contributions
+
+Contributions are of course welcome. See [CONTRIBUTING](https://github.com/BBVA/sqerzo/blob/master/CONSTRIBUTING.rst) or skim existing tickets to see where you could help out.
+
 ## License
 
-This project is distributed under [BSD license](https://github.com/cr0hn/sqerzo/blob/master/LICENSE>)
+SQErzo is Open Source Software and available under the [Apache 2 license](https://github.com/BBVA/sqerzo/blob/master/LICENSE)
